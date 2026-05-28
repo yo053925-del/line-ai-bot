@@ -95,8 +95,13 @@ def reply_to_user(reply_token, message):
 def ask_gemini(user_message):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     payload = {
-        "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-        "contents": [{"parts": [{"text": user_message}]}]
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": SYSTEM_PROMPT + "\n\n客戶問題：" + user_message}]
+            }
+        ],
+        "generationConfig": {"maxOutputTokens": 500}
     }
     res = requests.post(url, json=payload)
     res.raise_for_status()
