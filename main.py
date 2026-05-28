@@ -64,7 +64,9 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
         }
         requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
     except Exception as e:
+        import traceback
         print(f"記錄對話失敗: {e}")
+        print(traceback.format_exc())
  
 def update_customer(user_id, user_name):
     try:
@@ -98,7 +100,9 @@ def update_customer(user_id, user_name):
                 }
             })
     except Exception as e:
+        import traceback
         print(f"更新客戶資料失敗: {e}")
+        print(traceback.format_exc())
  
 def reply_to_user(reply_token, message):
     requests.post(
