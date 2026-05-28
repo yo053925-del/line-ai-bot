@@ -57,12 +57,12 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
         data = {
             "parent": {"database_id": NOTION_CONV_DB},
             "properties": {
-                "欄位名稱": {"title": [{"text": {"content": now}}]},
-                "類型": {"rich_text": [{"text": {"content": f"用戶:{user_name} 問:{user_msg[:500]} 答:{ai_reply[:500]}"}}]}
+                "時間": {"title": [{"text": {"content": f"{now} | {user_name}"}}]},
+                "": {"rich_text": [{"text": {"content": f"問：{user_msg[:800]}\n答：{ai_reply[:800]}"}}]}
             }
         }
         res = requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
-        print(f"Notion 對話記錄: {res.status_code} - {res.json().get('object','')}{res.json().get('code','')}{res.json().get('message','')}") 
+        print(f"Notion 對話記錄: {res.status_code}")
     except Exception as e:
         import traceback
         print(f"記錄對話失敗: {e}")
@@ -74,29 +74,25 @@ def update_customer(user_id, user_name):
         res = requests.post(
             f"https://api.notion.com/v1/databases/{NOTION_CUST_DB}/query",
             headers=NOTION_HEADERS,
-            json={"filter": {"property": "用戶ID", "rich_text": {"equals": user_id}}}
+            json={"filter": {"property": "用戶名稱", "title": {"equals": user_id}}}
         )
         results = res.json().get("results", [])
         if results:
             page_id = results[0]["id"]
-            count = results[0]["properties"]["互動次數"]["number"] + 1
+            count = results[0]["properties"]["用戶ID"]["number"] + 1
             requests.patch(
                 f"https://api.notion.com/v1/pages/{page_id}",
                 headers=NOTION_HEADERS,
                 json={"properties": {
-                    "最後互動時間": {"rich_text": [{"text": {"content": now}}]},
-                    "互動次數": {"number": count}
+                    "用戶ID": {"number": count}
                 }}
             )
         else:
             requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json={
                 "parent": {"database_id": NOTION_CUST_DB},
                 "properties": {
-                    "用戶名稱": {"title": [{"text": {"content": user_name}}]},
-                    "用戶ID": {"rich_text": [{"text": {"content": user_id}}]},
-                    "首次互動時間": {"rich_text": [{"text": {"content": now}}]},
-                    "最後互動時間": {"rich_text": [{"text": {"content": now}}]},
-                    "互動次數": {"number": 1}
+                    "用戶名稱": {"title": [{"text": {"content": f"{user_name} ({user_id})"}}]},
+                    "用戶ID": {"number": 1}
                 }
             })
     except Exception as e:
