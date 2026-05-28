@@ -1,5 +1,6 @@
 from flask import Flask, request
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import requests
 import os
 from datetime import datetime
@@ -186,12 +187,12 @@ def reply_to_user(reply_token, message):
     )
 
 def ask_gemini(user_message):
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        system_instruction=SYSTEM_PROMPT
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+        contents=user_message
     )
-    response = model.generate_content(user_message)
     return response.text
 
 @app.route("/webhook", methods=["POST"])
@@ -221,6 +222,7 @@ def webhook():
                     log_conversation(user_id, user_name, user_msg, ai_reply)
                     update_customer(user_id, user_name)
                 except Exception as e:
+                    print(f"處理訊息失敗: {e}")
                     reply_to_user(reply_token, "抱歉，目前系統忙碌中，請稍後再試。")
     return "OK", 200
 
