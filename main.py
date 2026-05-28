@@ -95,7 +95,7 @@ def update_customer(user_id, user_name):
             requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json={
                 "parent": {"database_id": NOTION_CUST_DB},
                 "properties": {
-                    "使用者名稱": {"title": [{"text": {"content": user_name}}]},
+                    "用戶名稱": {"title": [{"text": {"content": user_name}}]},
                     "用戶ID": {"rich_text": [{"text": {"content": user_id}}]},
                     "首次互動時間": {"rich_text": [{"text": {"content": now}}]},
                     "最後互動時間": {"rich_text": [{"text": {"content": now}}]},
@@ -135,7 +135,7 @@ def ask_openai(user_message):
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    print(f"DEBUG - NOTION_TOKEN: {'OK' if NOTION_TOKEN else 'MISSING'}, CONV_DB: {'OK' if NOTION_CONV_DB else 'MISSING'}, CUST_DB: {'OK' if NOTION_CUST_DB else 'MISSING'}")
+    print(f"DEBUG - NOTION_TOKEN: {'OK' if NOTION_TOKEN else 'MISSING'}, CONV_DB: {NOTION_CONV_DB[:8] if NOTION_CONV_DB else 'MISSING'}, CUST_DB: {NOTION_CUST_DB[:8] if NOTION_CUST_DB else 'MISSING'}")
     body = request.get_json()
     if not body:
         return "OK", 200
