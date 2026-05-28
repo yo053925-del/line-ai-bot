@@ -62,7 +62,8 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
                 "AI回覆": {"rich_text": [{"text": {"content": ai_reply}}]}
             }
         }
-        requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
+        res = requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
+        print(f"Notion 對話記錄回應: {res.status_code} {res.text}")
     except Exception as e:
         import traceback
         print(f"記錄對話失敗: {e}")
