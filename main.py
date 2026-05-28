@@ -1,6 +1,5 @@
 from flask import Flask, request
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 import requests
 import os
 from datetime import datetime
@@ -187,12 +186,12 @@ def reply_to_user(reply_token, message):
     )
 
 def ask_gemini(user_message):
-    client = genai.Client(api_key=GEMINI_API_KEY, http_options={"api_version": "v1"})
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
-        contents=user_message
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=SYSTEM_PROMPT
     )
+    response = model.generate_content(user_message)
     return response.text
 
 @app.route("/webhook", methods=["POST"])
