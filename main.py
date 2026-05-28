@@ -57,7 +57,7 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
         data = {
             "parent": {"database_id": NOTION_CONV_DB},
             "properties": {
-                "時間": {"title": [{"text": {"content": now}}]},
+                "名稱": {"title": [{"text": {"content": now}}]},
                 "用戶ID": {"rich_text": [{"text": {"content": user_id}}]},
                 "使用者名稱": {"rich_text": [{"text": {"content": user_name}}]},
                 "客戶問題": {"rich_text": [{"text": {"content": user_msg[:2000]}}]},
