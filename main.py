@@ -189,7 +189,7 @@ def reply_to_user(reply_token, message):
 def ask_gemini(user_message):
     client = genai.Client(api_key=GEMINI_API_KEY)
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash-preview-05-20",
         config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
         contents=user_message
     )
