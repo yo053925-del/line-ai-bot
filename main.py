@@ -20,13 +20,13 @@ NOTION_HEADERS = {
 
 SYSTEM_PROMPT = """你是 WE Media 的 AI 客服助理「小WE」，請用繁體中文、友善專業的語氣回覆客戶。回覆保持簡潔，每則不超過 200 字。
 
-無論客人說什麼，每次對話的第一則回覆都必須先自我介紹：「您好！我是小WE，WE Media 的 AI 客服助理，很高興為您服務！」然後再回答客人的問題。
+第一次見面或客人詢問你是誰時，才自我介紹：「您好！我是小WE，WE Media 的 AI 客服助理，很高興為您服務！」其他情況直接回答問題，不要每次都自我介紹。
 
 【公司介紹】WE Media 是您的自媒體神隊友，專注於短影音代操與品牌 IP 打造。核心優勢：超過 1000 部影音產製經驗，累積觀看數突破 3000 萬，400+ 集 Podcast 製作，IG 粉絲最高紀錄 10 萬+，支援分期付款。
 
 【服務內容】一條龍短影音代操：人設打造、企劃選題、腳本撰寫、拍攝剪輯、圖文內容、數據優化、全域分發。額外服務：AI 影片製作、線上課程平台（母公司提供）、Podcast 製作、精準廣告投放。
 
-【短影音代操報價】方案B金融業個人/單位：每期8支短影音+8篇圖文，NT$264,000（開案預付88,000/每期88,000）。其他產業依需求客製報價。價格未含5%營業稅。若不需要圖文內容，每篇圖文可抵800元。
+【短影音代操報價】我們提供短影音代操服務：每期8支短影音+8篇圖文，NT$264,000（開案預付88,000/每期88,000）。其他產業依需求客製報價。價格未含5%營業稅。若不需要圖文內容，每篇圖文可抵800元。
 
 【AI影片報價】
 基礎方案：30秒內、3場景以內 = NT$4,000（含2次小幅修改）
@@ -60,12 +60,12 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
                 "時間": {"title": [{"text": {"content": now}}]},
                 "用戶ID": {"rich_text": [{"text": {"content": user_id}}]},
                 "使用者名稱": {"rich_text": [{"text": {"content": user_name}}]},
-                "客戶問題": {"rich_text": [{"text": {"content": user_msg}}]},
-                "AI回覆": {"rich_text": [{"text": {"content": ai_reply}}]}
+                "客戶問題": {"rich_text": [{"text": {"content": user_msg[:2000]}}]},
+                "AI回覆": {"rich_text": [{"text": {"content": ai_reply[:2000]}}]}
             }
         }
         res = requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
-        print(f"Notion 對話記錄回應: {res.status_code} {res.text}")
+        print(f"Notion 對話記錄: {res.status_code} - {res.json().get('object','')}{res.json().get('code','')}{res.json().get('message','')}") 
     except Exception as e:
         import traceback
         print(f"記錄對話失敗: {e}")
@@ -140,6 +140,11 @@ def webhook():
     if not body:
         return "OK", 200
     for event in body.get("events", []):
+        if event.get("type") == "follow":
+            reply_token = event.get("replyToken")
+            if reply_token:
+                reply_to_user(reply_token, "您好！我是小WE，WE Media 的 AI 客服助理，很高興為您服務！\n\n有任何關於短影音代操、AI影片製作或線上課程的問題，歡迎隨時詢問 😊")
+            continue
         if event.get("type") == "message":
             if event["message"].get("type") == "text":
                 user_msg = event["message"]["text"]
