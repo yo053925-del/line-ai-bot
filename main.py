@@ -58,7 +58,7 @@ def log_conversation(user_id, user_name, user_msg, ai_reply):
             "parent": {"database_id": NOTION_CONV_DB},
             "properties": {
                 "時間": {"title": [{"text": {"content": f"{now} | {user_name}"}}]},
-                "": {"rich_text": [{"text": {"content": f"問：{user_msg[:800]}\n答：{ai_reply[:800]}"}}]}
+                "內容": {"rich_text": [{"text": {"content": f"問：{user_msg[:800]}\n答：{ai_reply[:800]}"}}]}
             }
         }
         res = requests.post("https://api.notion.com/v1/pages", headers=NOTION_HEADERS, json=data)
