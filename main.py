@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 LINE_TOKEN = os.environ.get("LINE_TOKEN")
 LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET")
 NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
@@ -92,20 +92,24 @@ def reply_to_user(reply_token, message):
         json={"replyToken": reply_token, "messages": [{"type": "text", "text": message}]}
     )
 
-def ask_gemini(user_message):
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": SYSTEM_PROMPT + "\n\n客戶問題：" + user_message}]
-            }
-        ],
-        "generationConfig": {"maxOutputTokens": 500}
-    }
-    res = requests.post(url, json=payload)
+def ask_openai(user_message):
+    res = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            "max_tokens": 500
+        }
+    )
     res.raise_for_status()
-    return res.json()["candidates"][0]["content"]["parts"][0]["text"]
+    return res.json()["choices"][0]["message"]["content"]
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -129,7 +133,7 @@ def webhook():
                 except:
                     pass
                 try:
-                    ai_reply = ask_gemini(user_msg)
+                    ai_reply = ask_openai(user_msg)
                     reply_to_user(reply_token, ai_reply)
                     log_conversation(user_id, user_name, user_msg, ai_reply)
                     update_customer(user_id, user_name)
